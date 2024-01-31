@@ -1,0 +1,171 @@
+---
+title: "2_FlowSOM_clustering_RADIANT.V1.0_usr"
+output: html_notebook
+---
+
+```{r, Chunk 1: prepare working environment}
+
+### ADJUSTABLE VARIABLES ###
+
+# Set the working directory to specify the file location
+  wd = "~/Work/RADIANT" 
+
+# Define experiment variables
+  cellType = "cellType" # select the folder containing the data you want to analyse. Valid entries should match a folder name in wd specified above
+  expID = "RADIANT" # add the name of the study, or experiment.
+  file_pattern = "uncomp.fcs" # shared digit/character at the end of fcs files and fcs extension
+  ds = "FC" # Specify the data source (valid inputs: "FS" for normal flow cytometry, "SFC" for spectral flow cytometry)
+
+  
+### CODE ###
+
+# importing custom functions
+  RMD = "FlowSOM_clustering"
+  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_usr_v1.0.R"))
+# install missing packages, install them if required 
+  autoInstallpkg()
+# load required packages
+  autoLoadpkg()
+# checks which files are created previously
+  checkPreviousRuns()
+# locate necessary files
+  mapDirectories()
+  
+
+```
+```{r, Chunk 2: loading data into the working environment, importing md and panel files and creating sce object.}
+
+### ADJUSTABLE VARIABLES ###
+
+# valid input are options as described in previous chunk
+# b = transformed files, c = cleaned and transformed files, d = normalized files
+  to_import = "d" # valid input: b, c or d
+  
+
+### CODE ###
+
+  stopifnot(to_import %in% c("b", "c", "d"))
+# import required files
+  import_fcs_files()
+  importData() 
+# create sce object 
+  load_data()
+
+```
+```{r, Chunk 3: down sampling, clustering and dimension reduction.}
+
+### ADJUSTABLE VARIABLES ###
+
+  excluded_markers = c() # add the markers you want to exclude from clustering to this list
+
+# down sampling 
+  min_cells = 1000 # indicate the minimum amount of cells to include from each file (files with less cells will be excluded from analysis)
+  max_cells = 10000 # indicate the maximum amount of cells to include from each file
+
+# clustering  
+  metClust = 15 # set number of metaclusters for FlowSOM
+  seedFS = 1324 # set seed for flowSOM
+  FSxdim = 10 # set the amount of SOMnodes in the x-dimension
+  FSydim = 10 # set the amount of SOMnodes in the y-dimension
+  
+# dimension reduction 
+  anType = c("UMAP") # indicate which type of analysis you want to be done (c(UMAP, T-SNE))
+  clusterSeed = 1234 # set the seed for UMAP and T-SNE
+  UMAP_cells = 1000 # set the number of cells per file you want to run UMAP on
+  TSNE_cells = 500 # set the number of cells per file you want to run T-SNE on
+
+
+### CODE ###
+
+# Pooling type_markers and state_markers
+  TSMarkers = c(type_markers(sce), state_markers(sce))
+# down sample the data to max_cells
+  downSample()
+# removes markers from sce if indicated and create list of all (remaining) markers
+  removeMarkers()
+# Perform FlowSOM clustering
+  performClustering()
+# Perform UMAP and/or TSNE dimensional reduction
+  performDimRed()
+
+
+```
+```{r, Chunk 4: determination requirement of cluster merging. }
+
+### ADJUSTABLE VARIABLES ###
+ 
+  plot_sequences = TRUE # put to TRUE if you want to run the sequence of UMAP/T-SNE meta clusters 
+  start_nr = 12 # place a number of clusters that must be there anyway, like you don't expect 2 clusters, but 10 at least, good, take that one 
+  end_nr = metClust # change to a number lower than metClust if you want, otherwise it'll run everything (then put metClust)
+  
+  
+### CODE ###
+  
+  plot_sequences_DR()
+  
+```
+```{r, Chunk 5: cluster merging/renaming files.}
+
+### ADJUSTABLE VARIABLES ###
+
+# merging clusters
+  performClusterMerging = TRUE # put to FALSE if you don't want to run cluster merging 
+  customMeta = 15 # set the amount of metaclusters you want to work with. Needs to be lower, or equal to metClust in the previous chunk 
+  writeCM = TRUE # put to TRUE when you need to create a merging table excel sheet (so your first run)
+  
+# plot heatmap/UMAP before and/or after merging  
+  plotDiagnosticsBefore = TRUE # plot a UMAP and heatmap for clusters before merging
+  plotDiagnosticsCM = TRUE # plot a UMAP and heatmap for merged clusters
+  
+
+### CODE ###
+  
+# perform cluster merging  
+  cluster_merging()
+# create a settings file
+  createSettingsFile("Settings_clustering_")
+# Check which files are present in the environment
+  Summary_environment = TRUE
+# save variables required for downstream analysis
+  save_variables_rmd2()
+  
+  
+```
+```{r, Chunk 6: evaluation cluster merging.}
+
+### ADJUSTABLE VARIABLES ###
+
+  name_CM_result = "Plot_1"
+  save_plots = TRUE # if you want to save the result (with the file name as specified in name_CM_result) put to TRUE
+
+  if(performClusterMerging){
+  p =   plotPbExprs( 
+
+          # can be altered
+            fun = c("mean"), # character string specifying the summary statistic to use. valid options are: median, mean...
+            geom = c("both"), # character string specifying whether to include only points, box plots or both
+            size_by = FALSE, # of geom is not both or box_plot, you can alter shape size with changing it to just a number
+            ncol = 6, # integer scalar specifying number of facet columns.
+            
+            facet_by = "antigen", # what to split the different box plots in. valid options: antigen or cluster_id
+            color_by = "batch", # valid options are column names of the metadata (run names(colData(sce_merge)) if unsure what options are)
+            shape_by = NULL, # valid options are column names of the metadata
+  
+          
+### CODE ###
+  
+            sce_merge,
+            k = "merging1",
+            features = "type",
+            assay = "exprs",
+            jitter = TRUE) +
+          
+          theme_classic()
+      
+  
+# save output figure to cluster merging folder
+  save_CM_plots()
+  }
+
+
+```

@@ -1,0 +1,274 @@
+---
+title: "1_Data_Preprocessing_RADIANT.V1.0_usr"
+output: html_document
+---
+
+```{r, Chunk 1:  setting wd, installing & loading required packages and checking fcs files present.}
+
+### ADJUSTABLE VARIABLES ###
+
+# Set the working directory to specify the file location
+  wd = "~/Work/RADIANT" 
+
+# Define experiment variables
+  cellType = "cellType" # select the folder containing the data you want to analyse. Valid entries should match a folder name in wd specified above
+  expID = "RADIANT" # add the name of the study, or experiment.
+  file_pattern = "uncomp.fcs" # shared digit/character at the end of fcs files and fcs extension
+  ds = "FC" # Specify the data source (valid inputs: "FS" for normal flow cytometry, "SFC" for spectral flow cytometry)
+
+  
+### CODE ###
+  
+# importing custom functions
+  RMD = "Pre_processing"
+  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_usr_v1.0.R"))
+# detect, install and/or load required packages
+  autoInstallpkg()
+  autoLoadpkg()
+# check variables
+  stopifnot(ds %in% c("FC", "SFC"))
+# creating folder structure
+  mapDirectories()
+# check all fcs files that have been created 
+  checkPreviousRuns()
+
+
+```
+```{r, Chunk 2:  loading data into the working environment.}
+
+### ADJUSTABLE VARIABLES ###
+
+# valid input are options as described in previous chunk
+# a = raw files, b = transformed files, c = cleaned and transformed files 
+  to_import = "a" # valid input: a, b or c
+
+
+### CODE ###
+
+# check variables
+  stopifnot(to_import %in% c("a", "b", "c"))
+# import the fcs files
+  import_fcs_files()
+
+
+```
+```{r, Chunk 3:  cleaning and transformation of the data.}
+
+### ADJUSTABLE VARIABLES ###
+
+  writePanel = TRUE # set to TRUE if you want a panel file template to be written automatically
+  write_files = TRUE # set to TRUE if you want to write Mapping Files. 
+  
+  cleaningMethod = "PeacoQC" # select the method to be used for data cleaning. Options are: 'PeacoQC',  or 'None'.
+  transformationMethod = "None" # select method to be used for transformation. Options are: 'Logicle', or 'None'.
+
+  customFileNameVar = NA # string specifying a parameter (other than 'TUBE NAME', '$FIL', or '$TBNM") 
+  
+  multComp = TRUE # set to TRUE if you have multiple compensation matrices
+  multRef = TRUE # set to TRUE if you have multiple reference files
+  
+  markers_of_interest = c("FSC-A", "SSC-A", "CD8_IgG") 
+  
+# Settings PeacoQC
+  MADValue = 6 # set MAD value for PeacoQC. Default is 6
+  ITLimitValue = 0.55 # set ITLimit value for PeacoQC. Default is 0.55
+  minBin = 10 # minimum number of bins for PeacoQC
+  maxBin = 250 # maximum number of bins for PeacoQC. Max is 500. 
+  dEvtsPerBin = 150 # set the default number of events per bin. 
+  plotPQC = FALSE #  valid entries are FALSE, TRUE, or any number specifying a percentage. 
+
+
+### CODE ###
+
+# list reference files
+  listFiles()
+# variable checks
+  variableChecks()
+# checks if external filename matches internal filename
+  fileNameCheck()
+# writing Mapping Files
+  writeMappingFiles()
+  internalPQCcheck = FALSE
+# perform clean and/or transformation
+  cleanAndTransform()
+# write panel file
+  writePanelFile()
+
+```
+```{r, Chunk 4:  validation panel file and matching internal and external fcs file names.}
+
+### ADJUSTABLE VARIABLES ###
+
+  writeMeta = TRUE #set to TRUE if you want a metadata file template to be written automatically, set to FALSE if already done
+
+
+### CODE ###
+
+# Check if supplied panel matches fcs file panel 
+  panelCheck()
+# Creates metadata file template in designated directory with file names of fcs files the correct order
+  writeMetaDataFile()
+
+
+```
+```{r, Chunk 5:  validation metadata and generating diagnostic plots.}
+
+### ADJUSTABLE VARIABLES ###
+
+  write_files = TRUE # set to TRUE if you want to create pdf files with the diagnostic data.
+
+  TCs = TRUE # set to TRUE if the data contains technical controls
+  
+  NRSColorBy = "batch" # select a column name of the metadata to color the NRS plots
+  MDSColorBy = "batch" # select a column name of the metadata to color the MDS plots
+  exprHMRowAnno = c("batch") # select variable(s) from the metadata to annotate the rows of the expression heatmap 
+
+
+### CODE ###
+
+# specify which channels are set to type or state and are thus to be included for further analysis
+  specifyChannels()
+# update the flowSet to include the originalID parameter
+  updateMarkerNames()
+# import metadata and panel files and create list of factors to run clustering on
+  importData()
+# checks if technical controls are present
+  TCcheck()
+# prepares data for advanced analysis by creating a single cell experiment
+  createSCE()
+# diagnostic plots
+  previousDiagnostics()
+  writeDiagnostics()
+
+```
+
+Only run if you have technical controls
+```{r, Chunk 6:  preparing files and directories for cross entropy test.}
+
+### ADJUSTABLE VARIABLES ###
+
+  crossEntropyTest = TRUE # set to FALSE if you don't want to run it, or have run it before
+  channels.of.interest = markers_of_interest # specified markers before, if you want a specific set use c(x, x, x) in which x is "name of the marker
+  fcs.seed.base <- 20210608 # Tip: use today's date, don't change between runs as this is important for reproducible results. 
+
+# Settings for detecting batch effect between technical controls    
+  filesCE = to_import # valid input: to_import, or a path to a folder with fcs files: fcs, trns, pqcd, cn (only if run cytonorm)
+  md_column = "batch" # run colnames(md) seperately in the console to check valid inputs, note: capital and space sensitive!
+  subsettingCE = TRUE # put to TRUE if you want to subset the data, if FALSE all files will be taken along 
+  subset_column = "sample_control" # run colnames(md) seperately in the console to check valid inputs, note: capital and space sensitive!
+  subset_for = "control" # write unique(md$ in the console down below, and click on the column you specified above for options and add the ), options will be shown on screen
+
+  
+### CODE ###
+
+# running CE to check for batch effects  
+
+# check variables
+  stopifnot(crossEntropyTest)
+  checkInputMarkers()
+# run preparatory steps for the cross entropy test
+  prepCE(filesCE, md_column) # add still some subsetting  # messaging in markdown stops here, it is shown in console
+  prepVarCE()
+
+
+```
+```{r, Chunk 7:  running the cross entorpy test. (should be run after chunk 6)}
+
+### ADJUSTABLE VARIABLES ###
+
+  fcs.channel.label <- c( 
+    "Blue1-530_30-A" = "CD8_IgG",
+    "Blue4-710_50-A" = "CD14_CD24",
+    "Red1-670_30-A" = "CD127",
+    "Red2-710_50-A" = "CXCR5"
+  )
+
+
+# determining cluster numbers for CE only  
+  fcs.cluster.n <- 12 # e.g., for a broad immune phenotyping panel use 40-50 clusters. For pre-gated cell types (e.g., CD8s), use 10-12 clusters.
+  fcs.flow.som.dim <- 12 # In general use the same number for fcs.cluster.n and fcs.flow.som.dim unless you know why to do otherwise.
+
+# significant threshold  
+  threshold_CE = 1e-5 # default 1e-5, only change when you know why this is so 'low' and what the impact can be to change it
+
+# optional variables to change, only change when you know why and how it works, more cells will take longer. 
+  fcs.umap.iter.n <- 1000
+  fcs.dmrd.data.sample.n.per.condition <- 9000 # default: 9000, can be any number or NULL
+
+
+### CODE ###
+  
+  stopifnot(crossEntropyTest)
+  run_CE()
+  visualize_CE_if_needed()
+
+  
+```
+```{r, Chunk 8:  check CSV values for CN. Requires technical controls to work.}
+
+### ADJUSTABLE VARIABLES ###
+
+  performCN = TRUE # set TRUE if you want to perform cytonorm, FALSE if not.
+  verbose = TRUE # put to FALSE if you dont want updates
+
+  cvsCheck = TRUE  #set FALSE if you have checked coefficient of variation for this analysis before 
+  testCVcluster = c(3:15,20,25) # default: c(3:15,20,25) 
+  nCellsCN = 10000 #set the total amount of cells you want to train the CytoNorm model on. Default 5000
+  
+  ydimCN = 10 #set the amount of SOMnodes in the y dimension. Default 10
+  xdimCN = 10 #set the amount of SOMnodes in the x dimension. Default 10
+  
+  nClustersCN = 10 #set the amount of metaclusters you want to use for CytoNorm. Default 10. Must be within range of testCVcluster
+
+  
+### CODE ###
+  
+  checkVarCN()
+  checkCVSValues()
+
+```
+```{r, Chunk 9:  run CytoNorm (should be run after chunk 8).}
+
+### ADJUSTABLE VARIABLES ###
+
+  write_files = TRUE # set to TRUE if you want to write diagnostics plots after running CytoNorm, default TRUE.
+  nClustersCN = 15 # set the amount of metaclusters you want to use for CytoNorm. Based on CVS values (see manual).
+  normParamLimit = c(-2,5) # sets interval indicating most of the marker expression is expected. Check diagnostic plots and decide min & max. Default = c(-2,5)
+
+# only change these variables if you know what they do, and why you want to change them  
+  nCellsCN = 10000 #set the total amount of cells you want to train the CytoNorm model on. Default 10000
+  nQuantilesCN = 101 #set the number of quantiles you want to use. Default 101
+  ydimCN = 10 #set the amount of SOMnodes in the y dimension. Default 10
+  xdimCN = 10 #set the amount of SOMnodes in the x dimension. Default 10
+  goalDistributionCN = "mean" #set the goal distribution for CytoNorm. Default is "mean", can also be nQ numeric values or one of the batch labels
+
+
+### CODE ###
+  
+  performCytoNorm()
+  
+  
+```
+```{r, Chunk 10: preparing files and directories for cross entropy test after CN.}
+
+### ADJUSTABLE VARIABLES ###
+
+  crossEntropyTest = TRUE # set to FALSE if ran before for TCs
+
+# Settings for detecting batch effect between technical controls    
+  filesCE = to_import # valid input: to_import, or a path to a folder with fcs files: fcs, trns, pqcd, cn (only if run cytonorm)
+  md_column = "batch" # run colnames(md) seperately in the console to check valid inputs, note: capital and space sensitive!
+  subsettingCE = TRUE # put to TRUE if you want to subset the data, if FALSE all files will be taken along 
+  subset_column = "sample_control" # run colnames(md) separately in the console to check valid inputs, note: capital and space sensitive!
+  subset_for = "control" # write unique(md$ in the console down below, and click on the column you specified above for options and add the ), options will be shown on screen
+
+  
+### CODE ###
+
+  stopifnot(crossEntropyTest)
+  prepCE(filesCE, md_column) 
+  prepVarCE()
+  run_CE()
+  visualize_CE_if_needed()
+
+```
