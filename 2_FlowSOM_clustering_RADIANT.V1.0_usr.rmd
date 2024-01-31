@@ -59,14 +59,14 @@ output: html_notebook
   excluded_markers = c() # add the markers you want to exclude from clustering to this list
 
 # down sampling 
-  min_cells = 1000 # indicate the minimum amount of cells to include from each file (files with less cells will be excluded from analysis)
-  max_cells = 10000 # indicate the maximum amount of cells to include from each file
+  min_cells = 1000 # indicate the minimum number of cells to include from each file (files with less cells will be excluded from analysis)
+  max_cells = 10000 # indicate the maximum number of cells to include from each file
 
 # clustering  
   metClust = 15 # set number of metaclusters for FlowSOM
   seedFS = 1324 # set seed for flowSOM
-  FSxdim = 10 # set the amount of SOMnodes in the x-dimension
-  FSydim = 10 # set the amount of SOMnodes in the y-dimension
+  FSxdim = 10 # set the number of SOMnodes in the x-dimension
+  FSydim = 10 # set the number of SOMnodes in the y-dimension
   
 # dimension reduction 
   anType = c("UMAP") # indicate which type of analysis you want to be done (c(UMAP, T-SNE))
@@ -110,7 +110,7 @@ output: html_notebook
 
 # merging clusters
   performClusterMerging = TRUE # put to FALSE if you don't want to run cluster merging 
-  customMeta = 15 # set the amount of metaclusters you want to work with. Needs to be lower, or equal to metClust in the previous chunk 
+  customMeta = 15 # set the number of metaclusters you want to work with. Needs to be lower, or equal to metClust in the previous chunk 
   writeCM = TRUE # put to TRUE when you need to create a merging table excel sheet (so your first run)
   
 # plot heatmap/UMAP before and/or after merging  

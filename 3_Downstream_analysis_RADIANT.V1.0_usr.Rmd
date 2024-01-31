@@ -47,7 +47,7 @@ To create a new folder, start running top to bottom from here
 # data set to use
   sce_to_use = sce_merge # put to sce_merge if you want to use manually merged clusters, put to sce if you didn't perform manual merging 
   performClusterMerging = TRUE # oyt to TRUE when sce_merge is used, FALSE if sce is used
-  customMeta = customMeta #set to customMeta if you've performed cluster merging. Otherwise set to any value (max equal to metClust in clustering RMD file chunk 3). FlowSOM clusters will be merged into customMeta amount of metaclusters
+  customMeta = customMeta #set to customMeta if you've performed cluster merging. Otherwise set to any value (max equal to metClust in clustering RMD file chunk 3). FlowSOM clusters will be merged into customMeta number of metaclusters
   
 # output 
   write_files = TRUE # set to TRUE if you want pdf files containing the results to be written
