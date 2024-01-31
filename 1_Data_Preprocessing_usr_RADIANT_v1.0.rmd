@@ -232,7 +232,7 @@ Only run if you have technical controls
 ### ADJUSTABLE VARIABLES ###
 
   write_files = TRUE # set to TRUE if you want to write diagnostics plots after running CytoNorm, default TRUE.
-  nClustersCN = 15 # set the number of metaclusters you want to use for CytoNorm. Based on CVS values (see manual).
+  nClustersCN = 5 # set the number of metaclusters you want to use for CytoNorm. Based on CVS values (see manual).
   normParamLimit = c(-2,5) # sets interval indicating most of the marker expression is expected. Check diagnostic plots and decide min & max. Default = c(-2,5)
 
 # only change these variables if you know what they do, and why you want to change them  
