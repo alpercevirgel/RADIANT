@@ -60,14 +60,14 @@ output: html_document
   write_files = TRUE # set to TRUE if you want to write Mapping Files. 
   
   cleaningMethod = "PeacoQC" # select the method to be used for data cleaning. Options are: 'PeacoQC',  or 'None'.
-  transformationMethod = "None" # select method to be used for transformation. Options are: 'Logicle', or 'None'.
+  transformationMethod = "Logicle" # select method to be used for transformation. Options are: 'Logicle', or 'None'.
 
   customFileNameVar = NA # string specifying a parameter (other than 'TUBE NAME', '$FIL', or '$TBNM") 
   
   multComp = TRUE # set to TRUE if you have multiple compensation matrices
   multRef = TRUE # set to TRUE if you have multiple reference files
   
-  markers_of_interest = c("FSC-A", "SSC-A", "CD8_IgG") 
+  markers_of_interest = c("FSC-A", "SSC-A", "CD8", "CD4") #here add the markers of interest analyzed in your panel 
   
 # Settings PeacoQC
   MADValue = 6 # set MAD value for PeacoQC. Default is 6
