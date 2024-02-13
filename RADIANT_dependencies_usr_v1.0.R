@@ -2528,7 +2528,8 @@
       
       md_2 = read.xlsx(mtd, 1, stringsAsFactors=FALSE)
       md_2$file_name <- paste("Norm_", md_2$file_name, sep = "")
-
+      colnames((md_2)[1]) = "file_name2"
+      
       assign("md_2", md_2, envir = .GlobalEnv)
       
       # save CN metadata as an excel file
