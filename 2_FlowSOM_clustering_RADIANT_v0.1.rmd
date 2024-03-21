@@ -1,5 +1,5 @@
 ---
-title: "2_FlowSOM_clustering_RADIANT.V1.0_usr"
+title: "2_FlowSOM_clustering_RADIANT_v0.1"
 output: html_notebook
 ---
 
@@ -21,7 +21,7 @@ output: html_notebook
 
 # importing custom functions
   RMD = "FlowSOM_clustering"
-  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_usr_v1.0.R"))
+  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_v0.1.R"))
 # install missing packages, install them if required 
   autoInstallpkg()
 # load required packages

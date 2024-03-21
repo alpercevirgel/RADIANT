@@ -1,5 +1,5 @@
 ---
-title: "1_Data_Preprocessing_RADIANT.V1.0_usr"
+title: "1_Data_Preprocessing_RADIANT_v0.1"
 output: html_document
 ---
 
@@ -21,7 +21,7 @@ output: html_document
   
 # importing custom functions
   RMD = "Pre_processing"
-  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_usr_v1.0.R"))
+  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_v0.1.R"))
 # detect, install and/or load required packages
   autoInstallpkg()
   autoLoadpkg()
@@ -72,8 +72,8 @@ output: html_document
 # Settings PeacoQC
   MADValue = 6 # set MAD value for PeacoQC. Default is 6
   ITLimitValue = 0.55 # set ITLimit value for PeacoQC. Default is 0.55
-  minBin = 10 # minimum number of bins for PeacoQC
-  maxBin = 250 # maximum number of bins for PeacoQC. Max is 500. 
+  minBin = 5 # minimum number of bins for PeacoQC
+  maxBin = 500 # maximum number of bins for PeacoQC. Default is 500. 
   dEvtsPerBin = 150 # set the default number of events per bin. 
   plotPQC = FALSE #  valid entries are FALSE, TRUE, or any number specifying a percentage. 
 
