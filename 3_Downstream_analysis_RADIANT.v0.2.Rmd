@@ -1,0 +1,112 @@
+---
+title: "3_Downstream_analysis_RADIANT.v0.2_usr"
+output: html_notebook
+---
+
+```{r, Chunk 1: load working environment.}
+
+### ADJUSTABLE VARIABLES ###
+
+# Set the working directory to specify the file location
+  wd = "~/Work/RADIANT" 
+
+# Define experiment variables
+  cellType = "cellType" # select the folder containing the data you want to analyse. Valid entries should match a folder name in wd specified above
+  expID = "RADIANT" # add the name of the study, or experiment.
+  file_pattern = "uncomp.fcs" # shared digit/character at the end of fcs files and fcs extension
+  ds = "FC" # Specify the data source (valid inputs: "FS" for normal flow cytometry, "SFC" for spectral flow cytometry)
+
+  
+### CODE ###
+
+# importing custom functions
+  RMD = "Downstream_analysis"
+  source(file.path(wd, cellType, "00 RADIANT files", "RADIANT_dependencies_usr_v1.2.R"))
+# install missing packages, install them if required 
+  autoInstallpkg()
+# load required packages
+  autoLoadpkg()
+# locate necessary files
+  mapDirectories()
+# import variables of clustering
+  load_variables_rmd2()
+# import files
+  import_fcs_files()
+  importData()
+# summary of directory
+  checkFilesPresent()
+
+```
+
+To create a new folder, start running top to bottom from here
+```{r, Chunk 2: create downstream analysis folder.}
+
+
+### ADJUSTABLE VARIABLES ###
+
+# data set to use
+  sce_to_use = sce_merge # put to sce_merge if you want to use manually merged clusters, put to sce if you didn't perform manual merging 
+  performClusterMerging = TRUE # oyt to TRUE when sce_merge is used, FALSE if sce is used
+  customMeta = customMeta #set to customMeta if you've performed cluster merging. Otherwise set to any value (max equal to metClust in clustering RMD file chunk 3). FlowSOM clusters will be merged into customMeta amount of metaclusters
+  
+# output 
+  write_files = TRUE # set to TRUE if you want pdf files containing the results to be written
+  write_FCS = TRUE # set to True if you want to export fcs files containing flowSOM meta cluster id's
+  plot_graph = TRUE # set to TRUE if you want pots to be generated in RStudio
+  
+# subsetting the data
+  subsetSCE = FALSE # set to TRUE if you want to subset the data
+  subsetCat = c("condition", "batch") # Please add the categories you subsetted for in this list (so e.g. "condition" , "Age_class"), valid entries are column names of metadata file.
+  
+  if (subsetSCE == TRUE){ sce_trunc_subs = filterSCE(sce_to_use, 
+                               condition != "control") ##you can indicate how you want to subset here. Valid entries are metadata groups, dont alter other rows of this code but you can add lines
+  } else { sce_trunc_subs = sce_to_use }
+  
+# visualization in graphs    
+  groupVar = "batch" # set the grouping variable in meta cluster abundance plots. Valid entries are metadata groups
+  shapeVar = "batch" # set the shape variable in meta cluster abundance plots. Valid entries are metadata groups
+  facetVar = "batch" # set the facet variable for UMAP and T-SNE plots. Valid entries are metadata groups
+  
+  groupOrder = c("1", "2", "3", "4") #set the order of the groups in the abundance plots. Entries need to match items from the metadata group indicated at groupVar
+  
+# clustering analysis  
+  rcaPlotType = c("box_plot") # select the plot type you want for the relative cluster abundance. Valid entries are "violin_plot", or "box_plot"
+  
+  
+### CODE ###
+  
+  meta = paste0("meta", customMeta)
+# Pooling type_markers and state_markers
+  TSMarkers = c(type_markers(sce_trunc_subs), state_markers(sce_trunc_subs))
+# Creating a list with subsetted categories
+  createSubsetList()
+# creating unique identifier for each run
+  createIdentifier()
+# plot FLowSOM graphs
+  plotGraphs()
+# Writing FlowSOM graphs to pdf
+  writeFiles()
+# Export FCS files containing metacluster id's
+  writeFCS()  
+
+```
+```{r, Chunk 3: statistical analysis.}
+
+### ADJUSTABLE VARIABLES ###
+
+# statistical analysis  
+  runStatistics = TRUE # set to TRUE if you want to run statistics.
+
+  PWC = "wilcox.test" # indicate which test to run for pairwise comparisons. Valid entries are "wilcox.test" and "t.test"
+  AOV = "anova" # indicate which test to run for analysis of variance. Valid entries are "kruskal.test" and "anova". If pairedData is TRUE and AOV is not anova a friedman test will be performed
+  pairedData = TRUE # set to TRUE if you're using pared data between groups indicated at groupVar
+  multCompAdjust = "bonferroni" # indicate correction method for multiple comparisons. Valid entries are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr"
+
+
+#### CODE ####
+
+# Perform statistics on metacluster abundance plots 
+  runStat()
+  
+
+```
